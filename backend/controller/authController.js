@@ -25,4 +25,17 @@ const signup = async (req, res, next) => {
   }
 };
 
-module.exports = { signup };
+const signin = async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) {
+      res.code = 401;
+      throw new Error("invalid creditials");
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = { signup, signin };
