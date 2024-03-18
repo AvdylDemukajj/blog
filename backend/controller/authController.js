@@ -1,5 +1,6 @@
 const { User } = require("../models");
 const hashPassword = require("../utils/hashPassword");
+const comparePassword = require("../validators/comparePassword");
 
 const signup = async (req, res, next) => {
   try {
@@ -33,6 +34,15 @@ const signin = async (req, res, next) => {
       res.code = 401;
       throw new Error("invalid creditials");
     }
+    const mached = await comparePassword(password, user.password);
+    if (!mached) {
+      res.code = 401;
+      throw new Error("invalid creditials");
+    }
+
+    res
+      .status(200)
+      .json({ code: 200, status: true, message: "User signin successful" });
   } catch (error) {
     next(error);
   }
