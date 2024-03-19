@@ -34,7 +34,7 @@ const signin = async (req, res, next) => {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
     if (!user) {
-      res.code = 401;
+      res.code = 400;
       throw new Error("invalid creditials");
     }
     const match = await comparePassword(password, user.password);
@@ -61,7 +61,7 @@ const verifyCode = async (req, res, next) => {
     const { email } = req.body;
     const user = await User.findOne({ email });
     if (!user) {
-      res.code = 404;
+      res.code = 400;
       throw new Error("User not found");
     }
     if (user.isVerified) {
@@ -122,7 +122,7 @@ const forgotPasswordCode = async (req, res, next) => {
 
     const user = await User.findOne({ email });
     if (!user) {
-      res.code = 404;
+      res.code = 400;
       throw new Error("User not found");
     }
 
@@ -149,6 +149,26 @@ const forgotPasswordCode = async (req, res, next) => {
 
 const recoverPassword = async (req, res, next) => {
   try {
+    const { email, code, password } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) {
+      res.code = 400;
+      throw new Error("User not found");
+    }
+    if (user.forgotPasswordCode !== code) {
+      res.code = 400;
+      throw new Error("Invalid code");
+    }
+
+    const hashedPassword = await hashPassword(password);
+    user.password = hashedPassword;
+    user.forgotPasswordCode = null;
+    await user.save();
+    res.send(200).json({
+      code: 200,
+      status: true,
+      message: "Password recoved successfully",
+    });
   } catch (error) {
     next(error);
   }
