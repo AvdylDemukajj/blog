@@ -1,6 +1,7 @@
 const { User } = require("../models");
 const hashPassword = require("../utils/hashPassword");
 const comparePassword = require("../validators/comparePassword");
+const generateToken = require("../utils/generateToken");
 
 const signup = async (req, res, next) => {
   try {
@@ -14,7 +15,7 @@ const signup = async (req, res, next) => {
 
     const hashedPassword = await hashPassword(password);
 
-    const newUser = new User({ name, email, password, role });
+    const newUser = new User({ name, email, password: hashedPassword, role });
     await newUser.save();
     res.status(201).json({
       code: 201,
@@ -34,15 +35,20 @@ const signin = async (req, res, next) => {
       res.code = 401;
       throw new Error("invalid creditials");
     }
-    const mached = await comparePassword(password, user.password);
-    if (!mached) {
+    const match = await comparePassword(password, user.password);
+    if (!match) {
       res.code = 401;
-      throw new Error("invalid creditials");
+      throw new Error("invalid creditialsss");
     }
 
-    res
-      .status(200)
-      .json({ code: 200, status: true, message: "User signin successful" });
+    const token = generateToken(user);
+
+    res.status(200).json({
+      code: 200,
+      status: true,
+      message: "User signin successful",
+      data: { token },
+    });
   } catch (error) {
     next(error);
   }
