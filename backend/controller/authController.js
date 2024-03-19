@@ -3,6 +3,7 @@ const hashPassword = require("../utils/hashPassword");
 const comparePassword = require("../validators/comparePassword");
 const generateToken = require("../utils/generateToken");
 const generateCode = require("../utils/generateCode");
+const sendEmail = require("../utils/sendEmail");
 
 const signup = async (req, res, next) => {
   try {
@@ -71,6 +72,13 @@ const verifyCode = async (req, res, next) => {
 
     user.verifacionCode = code;
     await user.save();
+
+    await sendEmail({
+      emailTo: user.email,
+      subject: "Email verification code",
+      code,
+      content: "Verify your account",
+    });
 
     res.status(200).json({
       code: 200,
