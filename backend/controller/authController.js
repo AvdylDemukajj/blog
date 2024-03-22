@@ -209,6 +209,49 @@ const chenagePassword = async (req, res, next) => {
   }
 };
 
+const updateProfile = async (req, res, next) => {
+  try {
+    const { _id } = req.user;
+    const { name, email } = req.body;
+    const user = await User.findById(_id).select(
+      "-password -verifacionCode -forgotPasswordCode"
+    );
+    if (!user) {
+      res.code = 400;
+      throw new Error("User not found");
+    }
+
+    if (email) {
+      const isUserExist = await User.findOne({ email });
+      if (
+        isUserExist &&
+        isUserExist.email === email &&
+        String(user._id) !== String(isUserExist._id)
+      ) {
+        res.code = 400;
+        throw new Error("Email Alredy exist");
+      }
+    }
+
+    user.name = name ? name : user.name;
+    user.email = email ? email : user.email;
+
+    if (email) {
+      user.isVerified = false;
+    }
+
+    await user.save();
+    res.status(200).json({
+      code: 200,
+      status: true,
+      message: "User profile updated successfully",
+      data: { user },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   signup,
   signin,
@@ -217,4 +260,5 @@ module.exports = {
   forgotPasswordCode,
   recoverPassword,
   chenagePassword,
+  updateProfile,
 };
