@@ -1,6 +1,6 @@
 const { User } = require("../models");
 const hashPassword = require("../utils/hashPassword");
-const comparePassword = require("../validators/comparePassword");
+const comparePassword = require("../utils/comparePassword");
 const generateToken = require("../utils/generateToken");
 const generateCode = require("../utils/generateCode");
 const sendEmail = require("../utils/sendEmail");
@@ -176,7 +176,34 @@ const recoverPassword = async (req, res, next) => {
 
 const chenagePassword = async (req, res, next) => {
   try {
-    res.json(req.user);
+    const { oldPassword, newPassword } = req.body;
+    const { _id } = req.user;
+
+    const user = await User.findById(_id);
+    if (!user) {
+      res.code = 400;
+      throw new Error("User not found");
+    }
+
+    const match = await comparePassword(oldPassword, user.password);
+    if (!match) {
+      res.code = 400;
+      throw new Error("Old password mismatch");
+    }
+
+    if (oldPassword === newPassword) {
+      res.code = 400;
+      throw new Error("You are providing old password");
+    }
+
+    const hashedPassword = await hashPassword(newPassword);
+    user.password = hashedPassword;
+    await user.save();
+    res.status(200).json({
+      code: 200,
+      status: true,
+      message: "Password changed successfully",
+    });
   } catch (error) {
     next(error);
   }
