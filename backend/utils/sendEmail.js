@@ -7,7 +7,10 @@ const sendEmail = async ({ emailTo, subject, code, content }) => {
     service: "Gmail",
     port: 587,
     secure: false,
-    auth: { user: process.env.USER, password: process.env.PASSWORD },
+    auth: {
+      user: process.env.USER,
+      password: process.env.PASSWORD,
+    },
   });
 
   const message = {
@@ -22,6 +25,7 @@ const sendEmail = async ({ emailTo, subject, code, content }) => {
   };
 
   await transporter.sendMail(message);
+  console.log(object);
 };
 
 module.exports = sendEmail;

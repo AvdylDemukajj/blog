@@ -174,6 +174,14 @@ const recoverPassword = async (req, res, next) => {
   }
 };
 
+const chenagePassword = async (req, res, next) => {
+  try {
+    res.json(req.user);
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   signup,
   signin,
@@ -181,4 +189,5 @@ module.exports = {
   verifyUser,
   forgotPasswordCode,
   recoverPassword,
+  chenagePassword,
 };
